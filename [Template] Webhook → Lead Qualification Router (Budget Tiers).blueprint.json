@@ -1,0 +1,1231 @@
+{
+    "name": "[Template] Webhook → Lead Qualification Router (Budget Tiers)",
+    "flow": [
+        {
+            "id": 1,
+            "module": "gateway:CustomWebHook",
+            "version": 1,
+            "parameters": {
+                "hook": 3769531,
+                "maxResults": 1
+            },
+            "mapper": {},
+            "metadata": {
+                "designer": {
+                    "x": 0,
+                    "y": 0,
+                    "name": "📥 Receive New Lead"
+                },
+                "setupValidation": {
+                    "result": {
+                        "valid": true,
+                        "fields": []
+                    },
+                    "version": 1,
+                    "configuration": "14a5b2c649691462"
+                },
+                "restore": {
+                    "parameters": {
+                        "hook": {
+                            "data": {
+                                "editable": "true"
+                            },
+                            "label": "lead_router"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "hook",
+                        "type": "hook:gateway-webhook",
+                        "label": "Webhook",
+                        "required": true
+                    },
+                    {
+                        "name": "maxResults",
+                        "type": "number",
+                        "label": "Maximum number of results"
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "email",
+                        "type": "text"
+                    },
+                    {
+                        "name": "name",
+                        "type": "text"
+                    },
+                    {
+                        "name": "budget",
+                        "type": "text"
+                    },
+                    {
+                        "name": "phone",
+                        "type": "text"
+                    },
+                    {
+                        "name": "service",
+                        "type": "text"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 2,
+            "module": "util:SetVariables",
+            "version": 1,
+            "parameters": {},
+            "filter": {
+                "name": "✅ Valid email only",
+                "conditions": [
+                    [
+                        {
+                            "a": "{{1.email}}",
+                            "b": "@",
+                            "o": "text:contain"
+                        }
+                    ]
+                ]
+            },
+            "mapper": {
+                "scope": "roundtrip",
+                "variables": [
+                    {
+                        "name": "BUSINESS_NAME",
+                        "value": "Your Business Name"
+                    },
+                    {
+                        "name": "HIGH_BUDGET_MIN",
+                        "value": "5000"
+                    },
+                    {
+                        "name": "LOW_BUDGET_MAX",
+                        "value": "1000"
+                    },
+                    {
+                        "name": "BOOKING_LINK",
+                        "value": "https://calendly.com/your-link"
+                    }
+                ]
+            },
+            "metadata": {
+                "designer": {
+                    "x": 300,
+                    "y": 0,
+                    "name": "⚙️ CONFIG – EDIT ONLY THIS."
+                },
+                "setupValidation": {
+                    "result": {
+                        "valid": true,
+                        "fields": []
+                    },
+                    "version": 1,
+                    "configuration": "1ccaecfe96c08e8b"
+                },
+                "restore": {
+                    "expect": {
+                        "scope": {
+                            "label": "One cycle"
+                        },
+                        "variables": {
+                            "items": [
+                                null,
+                                null,
+                                null,
+                                null
+                            ]
+                        }
+                    }
+                },
+                "expect": [
+                    {
+                        "name": "variables",
+                        "spec": {
+                            "name": "value",
+                            "spec": [
+                                {
+                                    "name": "name",
+                                    "type": "text",
+                                    "label": "Variable name",
+                                    "required": true
+                                },
+                                {
+                                    "name": "value",
+                                    "type": "any",
+                                    "label": "Variable value"
+                                }
+                            ],
+                            "type": "collection",
+                            "label": "Variable"
+                        },
+                        "type": "array",
+                        "label": "Variables",
+                        "validate": {
+                            "unique": {
+                                "by": "name"
+                            },
+                            "minItems": 1
+                        }
+                    },
+                    {
+                        "name": "scope",
+                        "type": "select",
+                        "label": "Variable lifetime",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "roundtrip",
+                                "execution"
+                            ]
+                        }
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "BUSINESS_NAME",
+                        "type": "any",
+                        "label": "BUSINESS_NAME"
+                    },
+                    {
+                        "name": "HIGH_BUDGET_MIN",
+                        "type": "any",
+                        "label": "HIGH_BUDGET_MIN"
+                    },
+                    {
+                        "name": "LOW_BUDGET_MAX",
+                        "type": "any",
+                        "label": "LOW_BUDGET_MAX"
+                    },
+                    {
+                        "name": "BOOKING_LINK",
+                        "type": "any",
+                        "label": "BOOKING_LINK"
+                    }
+                ],
+                "advanced": true
+            }
+        },
+        {
+            "id": 7,
+            "module": "util:SetVariable2",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "name": "LEAD_BUDGET",
+                "scope": "roundtrip",
+                "value": "{{parseNumber(replace(replace(1.budget; \"$\"; emptystring); \",\"; emptystring))}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 600,
+                    "y": 0,
+                    "name": "🔢 Clean Budget Value"
+                },
+                "setupValidation": {
+                    "result": {
+                        "valid": true,
+                        "fields": []
+                    },
+                    "version": 1,
+                    "configuration": "95fac4140dfcee62"
+                },
+                "restore": {
+                    "expect": {
+                        "scope": {
+                            "label": "One cycle"
+                        }
+                    }
+                },
+                "expect": [
+                    {
+                        "name": "name",
+                        "type": "text",
+                        "label": "Variable name",
+                        "required": true
+                    },
+                    {
+                        "name": "scope",
+                        "type": "select",
+                        "label": "Variable lifetime",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "roundtrip",
+                                "execution"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "value",
+                        "type": "any",
+                        "label": "Variable value"
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "LEAD_BUDGET",
+                        "type": "any",
+                        "label": "LEAD_BUDGET"
+                    }
+                ]
+            },
+            "onerror": [
+                {
+                    "id": 18,
+                    "module": "builtin:Resume",
+                    "version": 1,
+                    "parameters": {},
+                    "mapper": {
+                        "LEAD_BUDGET": "0"
+                    },
+                    "metadata": {
+                        "designer": {
+                            "x": 900,
+                            "y": 150
+                        },
+                        "restore": {},
+                        "expect": [
+                            {
+                                "name": "LEAD_BUDGET",
+                                "type": "any"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "id": 8,
+            "module": "builtin:BasicRouter",
+            "version": 1,
+            "parameters": {
+                "else": 3
+            },
+            "mapper": null,
+            "metadata": {
+                "designer": {
+                    "x": 900,
+                    "y": -150,
+                    "name": "🔀 Qualify by Budget"
+                }
+            },
+            "routes": [
+                {
+                    "flow": [
+                        {
+                            "id": 9,
+                            "module": "google-email:sendAnEmail",
+                            "version": 4,
+                            "parameters": {
+                                "__IMTCONN__": 11190815
+                            },
+                            "filter": {
+                                "name": "💎 High budget",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{7.LEAD_BUDGET}}",
+                                            "b": "{{2.HIGH_BUDGET_MIN}}",
+                                            "o": "number:greaterorequal"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "to": [
+                                    "{{1.email}}"
+                                ],
+                                "content": "<div style=\"font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#222;\">\r\n  <h2 style=\"color:#2b6cb0;\">Hi {{1.name}}, great to meet you! 🚀</h2>\r\n  <p>Thanks for your interest in <strong>{{1.service}}</strong> with <strong>{{2.BUSINESS_NAME}}</strong>. Based on your project scope, you qualify for a <strong>priority strategy call</strong> with our senior team.</p>\r\n  <p style=\"text-align:center;margin:28px 0;\">\r\n    <a href=\"{{2.BOOKING_LINK}}\" style=\"background:#2b6cb0;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:bold;\">Book Your Strategy Call</a>\r\n  </p>\r\n  <p>Best regards,<br><strong>The {{2.BUSINESS_NAME}} Team</strong></p>\r\n</div>",
+                                "subject": "Subject\t🚀 {{1.name}}, let's plan your {{1.service}} project",
+                                "bodyType": "rawHtml"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 1200,
+                                    "y": -450,
+                                    "name": "💎 High Budget – Book a Call"
+                                },
+                                "setupValidation": {
+                                    "result": {
+                                        "valid": true,
+                                        "fields": []
+                                    },
+                                    "version": 1,
+                                    "configuration": "d4e47997897fa48"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "cc": {
+                                            "mode": "chose"
+                                        },
+                                        "to": {
+                                            "mode": "chose",
+                                            "items": [
+                                                null
+                                            ]
+                                        },
+                                        "bcc": {
+                                            "mode": "chose"
+                                        },
+                                        "from": {
+                                            "mode": "chose",
+                                            "label": "Empty"
+                                        },
+                                        "bodyType": {
+                                            "label": "Raw HTML"
+                                        },
+                                        "attachments": {
+                                            "mode": "chose"
+                                        },
+                                        "emailHeaders": {
+                                            "mode": "chose"
+                                        }
+                                    },
+                                    "parameters": {
+                                        "__IMTCONN__": {
+                                            "data": {
+                                                "scoped": "true",
+                                                "connection": "google-email"
+                                            },
+                                            "label": "Muhammad's Gmail connection (mohsinijaz1782005@gmail.com)"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "__IMTCONN__",
+                                        "type": "account:google-email",
+                                        "label": "Connection",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "to",
+                                        "spec": {
+                                            "name": "value",
+                                            "type": "email",
+                                            "label": "Recipient email address",
+                                            "required": true,
+                                            "validate": true
+                                        },
+                                        "type": "array",
+                                        "label": "To",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "subject",
+                                        "type": "text",
+                                        "label": "Subject"
+                                    },
+                                    {
+                                        "name": "bodyType",
+                                        "type": "select",
+                                        "label": "Body type",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                "rawHtml",
+                                                "collection"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "attachments",
+                                        "spec": {
+                                            "name": "value",
+                                            "spec": [
+                                                {
+                                                    "name": "filename",
+                                                    "type": "filename",
+                                                    "label": "File name",
+                                                    "required": true,
+                                                    "semantic": "file:name"
+                                                },
+                                                {
+                                                    "name": "data",
+                                                    "type": "buffer",
+                                                    "label": "Data",
+                                                    "required": true,
+                                                    "semantic": "file:data"
+                                                }
+                                            ],
+                                            "type": "collection",
+                                            "label": "Attachment"
+                                        },
+                                        "type": "array",
+                                        "label": "Attachments"
+                                    },
+                                    {
+                                        "name": "from",
+                                        "type": "select",
+                                        "label": "From"
+                                    },
+                                    {
+                                        "name": "cc",
+                                        "spec": {
+                                            "name": "value",
+                                            "type": "email",
+                                            "label": "Recipient email address"
+                                        },
+                                        "type": "array",
+                                        "label": "CC recipients"
+                                    },
+                                    {
+                                        "name": "bcc",
+                                        "spec": {
+                                            "name": "value",
+                                            "type": "email",
+                                            "label": "Recipient email address"
+                                        },
+                                        "type": "array",
+                                        "label": "BCC recipients"
+                                    },
+                                    {
+                                        "name": "emailHeaders",
+                                        "spec": {
+                                            "name": "value",
+                                            "spec": [
+                                                {
+                                                    "name": "key",
+                                                    "type": "text",
+                                                    "label": "Key",
+                                                    "required": true
+                                                },
+                                                {
+                                                    "name": "value",
+                                                    "type": "text",
+                                                    "label": "Value"
+                                                }
+                                            ],
+                                            "type": "collection",
+                                            "label": "Email header"
+                                        },
+                                        "type": "array",
+                                        "label": "Additional email headers"
+                                    },
+                                    {
+                                        "name": "content",
+                                        "type": "text",
+                                        "label": "Content"
+                                    }
+                                ]
+                            },
+                            "onerror": [
+                                {
+                                    "id": 14,
+                                    "module": "builtin:Ignore",
+                                    "version": 1,
+                                    "parameters": {},
+                                    "mapper": {},
+                                    "metadata": {
+                                        "designer": {
+                                            "x": 1500,
+                                            "y": -450
+                                        },
+                                        "restore": {}
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "flow": [
+                        {
+                            "id": 10,
+                            "module": "google-email:sendAnEmail",
+                            "version": 4,
+                            "parameters": {
+                                "__IMTCONN__": 11190815
+                            },
+                            "filter": {
+                                "name": "📈 Mid budget",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{7.LEAD_BUDGET}}",
+                                            "b": "{{2.LOW_BUDGET_MAX}}",
+                                            "o": "number:greater"
+                                        },
+                                        {
+                                            "a": "{{7.LEAD_BUDGET}}",
+                                            "b": "{{2.HIGH_BUDGET_MIN}}",
+                                            "o": "number:less"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "to": [
+                                    "{{1.email}}"
+                                ],
+                                "content": "<div style=\"font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#222;\">\r\n  <h2 style=\"color:#2f855a;\">Hi {{1.name}}, thanks for reaching out! 📈</h2>\r\n  <p>We'd love to help with your <strong>{{1.service}}</strong> project. A specialist from <strong>{{2.BUSINESS_NAME}}</strong> will send you a tailored proposal within 24 hours.</p>\r\n  <p>Want to speed things up? <a href=\"{{2.BOOKING_LINK}}\" style=\"color:#2f855a;font-weight:bold;\">Pick a time to chat</a>.</p>\r\n  <p>Best regards,<br><strong>The {{2.BUSINESS_NAME}} Team</strong></p>\r\n</div>",
+                                "subject": "{{1.name}}, here's how we can help with {{1.service}}",
+                                "bodyType": "rawHtml"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 1200,
+                                    "y": -150,
+                                    "name": "📈 Mid Budget – Tailored Proposal"
+                                },
+                                "setupValidation": {
+                                    "result": {
+                                        "valid": true,
+                                        "fields": []
+                                    },
+                                    "version": 1,
+                                    "configuration": "335040578b4e817b"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "cc": {
+                                            "mode": "chose"
+                                        },
+                                        "to": {
+                                            "mode": "chose",
+                                            "items": [
+                                                null
+                                            ]
+                                        },
+                                        "bcc": {
+                                            "mode": "chose"
+                                        },
+                                        "from": {
+                                            "mode": "chose",
+                                            "label": "Empty"
+                                        },
+                                        "bodyType": {
+                                            "label": "Raw HTML"
+                                        },
+                                        "attachments": {
+                                            "mode": "chose"
+                                        },
+                                        "emailHeaders": {
+                                            "mode": "chose"
+                                        }
+                                    },
+                                    "parameters": {
+                                        "__IMTCONN__": {
+                                            "data": {
+                                                "scoped": "true",
+                                                "connection": "google-email"
+                                            },
+                                            "label": "Muhammad's Gmail connection (mohsinijaz1782005@gmail.com)"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "__IMTCONN__",
+                                        "type": "account:google-email",
+                                        "label": "Connection",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "to",
+                                        "spec": {
+                                            "name": "value",
+                                            "type": "email",
+                                            "label": "Recipient email address",
+                                            "required": true,
+                                            "validate": true
+                                        },
+                                        "type": "array",
+                                        "label": "To",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "subject",
+                                        "type": "text",
+                                        "label": "Subject"
+                                    },
+                                    {
+                                        "name": "bodyType",
+                                        "type": "select",
+                                        "label": "Body type",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                "rawHtml",
+                                                "collection"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "attachments",
+                                        "spec": {
+                                            "name": "value",
+                                            "spec": [
+                                                {
+                                                    "name": "filename",
+                                                    "type": "filename",
+                                                    "label": "File name",
+                                                    "required": true,
+                                                    "semantic": "file:name"
+                                                },
+                                                {
+                                                    "name": "data",
+                                                    "type": "buffer",
+                                                    "label": "Data",
+                                                    "required": true,
+                                                    "semantic": "file:data"
+                                                }
+                                            ],
+                                            "type": "collection",
+                                            "label": "Attachment"
+                                        },
+                                        "type": "array",
+                                        "label": "Attachments"
+                                    },
+                                    {
+                                        "name": "from",
+                                        "type": "select",
+                                        "label": "From"
+                                    },
+                                    {
+                                        "name": "cc",
+                                        "spec": {
+                                            "name": "value",
+                                            "type": "email",
+                                            "label": "Recipient email address"
+                                        },
+                                        "type": "array",
+                                        "label": "CC recipients"
+                                    },
+                                    {
+                                        "name": "bcc",
+                                        "spec": {
+                                            "name": "value",
+                                            "type": "email",
+                                            "label": "Recipient email address"
+                                        },
+                                        "type": "array",
+                                        "label": "BCC recipients"
+                                    },
+                                    {
+                                        "name": "emailHeaders",
+                                        "spec": {
+                                            "name": "value",
+                                            "spec": [
+                                                {
+                                                    "name": "key",
+                                                    "type": "text",
+                                                    "label": "Key",
+                                                    "required": true
+                                                },
+                                                {
+                                                    "name": "value",
+                                                    "type": "text",
+                                                    "label": "Value"
+                                                }
+                                            ],
+                                            "type": "collection",
+                                            "label": "Email header"
+                                        },
+                                        "type": "array",
+                                        "label": "Additional email headers"
+                                    },
+                                    {
+                                        "name": "content",
+                                        "type": "text",
+                                        "label": "Content"
+                                    }
+                                ]
+                            },
+                            "onerror": [
+                                {
+                                    "id": 15,
+                                    "module": "builtin:Ignore",
+                                    "version": 1,
+                                    "parameters": {},
+                                    "mapper": {},
+                                    "metadata": {
+                                        "designer": {
+                                            "x": 1500,
+                                            "y": -150
+                                        },
+                                        "restore": {}
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "flow": [
+                        {
+                            "id": 11,
+                            "module": "google-email:sendAnEmail",
+                            "version": 4,
+                            "parameters": {
+                                "__IMTCONN__": 11190815
+                            },
+                            "filter": {
+                                "name": "🌱 Low budget",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{7.LEAD_BUDGET}}",
+                                            "b": "{{2.LOW_BUDGET_MAX}}",
+                                            "o": "number:lessorequal"
+                                        },
+                                        {
+                                            "a": "{{7.LEAD_BUDGET}}",
+                                            "b": "0",
+                                            "o": "number:greater"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "to": [
+                                    "{{1.email}}"
+                                ],
+                                "content": "<div style=\"font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#222;\">\r\n  <h2 style=\"color:#b7791f;\">Hi {{1.name}}, thanks for your interest! 🌱</h2>\r\n  <p>We appreciate you considering <strong>{{2.BUSINESS_NAME}}</strong> for <strong>{{1.service}}</strong>. We've got starter packages designed for smaller budgets, and our team will share the best-fit options with you shortly.</p>\r\n  <p>Best regards,<br><strong>The {{2.BUSINESS_NAME}} Team</strong></p>\r\n</div>",
+                                "subject": "{{1.name}}, some helpful resources to get started",
+                                "bodyType": "rawHtml"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 1200,
+                                    "y": 150,
+                                    "name": "🌱 Low Budget – Starter Options"
+                                },
+                                "setupValidation": {
+                                    "result": {
+                                        "valid": true,
+                                        "fields": []
+                                    },
+                                    "version": 1,
+                                    "configuration": "3f3036bb9f9331eb"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "cc": {
+                                            "mode": "chose"
+                                        },
+                                        "to": {
+                                            "mode": "chose",
+                                            "items": [
+                                                null
+                                            ]
+                                        },
+                                        "bcc": {
+                                            "mode": "chose"
+                                        },
+                                        "from": {
+                                            "mode": "chose",
+                                            "label": "Empty"
+                                        },
+                                        "bodyType": {
+                                            "label": "Raw HTML"
+                                        },
+                                        "attachments": {
+                                            "mode": "chose"
+                                        },
+                                        "emailHeaders": {
+                                            "mode": "chose"
+                                        }
+                                    },
+                                    "parameters": {
+                                        "__IMTCONN__": {
+                                            "data": {
+                                                "scoped": "true",
+                                                "connection": "google-email"
+                                            },
+                                            "label": "Muhammad's Gmail connection (mohsinijaz1782005@gmail.com)"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "__IMTCONN__",
+                                        "type": "account:google-email",
+                                        "label": "Connection",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "to",
+                                        "spec": {
+                                            "name": "value",
+                                            "type": "email",
+                                            "label": "Recipient email address",
+                                            "required": true,
+                                            "validate": true
+                                        },
+                                        "type": "array",
+                                        "label": "To",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "subject",
+                                        "type": "text",
+                                        "label": "Subject"
+                                    },
+                                    {
+                                        "name": "bodyType",
+                                        "type": "select",
+                                        "label": "Body type",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                "rawHtml",
+                                                "collection"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "attachments",
+                                        "spec": {
+                                            "name": "value",
+                                            "spec": [
+                                                {
+                                                    "name": "filename",
+                                                    "type": "filename",
+                                                    "label": "File name",
+                                                    "required": true,
+                                                    "semantic": "file:name"
+                                                },
+                                                {
+                                                    "name": "data",
+                                                    "type": "buffer",
+                                                    "label": "Data",
+                                                    "required": true,
+                                                    "semantic": "file:data"
+                                                }
+                                            ],
+                                            "type": "collection",
+                                            "label": "Attachment"
+                                        },
+                                        "type": "array",
+                                        "label": "Attachments"
+                                    },
+                                    {
+                                        "name": "from",
+                                        "type": "select",
+                                        "label": "From"
+                                    },
+                                    {
+                                        "name": "cc",
+                                        "spec": {
+                                            "name": "value",
+                                            "type": "email",
+                                            "label": "Recipient email address"
+                                        },
+                                        "type": "array",
+                                        "label": "CC recipients"
+                                    },
+                                    {
+                                        "name": "bcc",
+                                        "spec": {
+                                            "name": "value",
+                                            "type": "email",
+                                            "label": "Recipient email address"
+                                        },
+                                        "type": "array",
+                                        "label": "BCC recipients"
+                                    },
+                                    {
+                                        "name": "emailHeaders",
+                                        "spec": {
+                                            "name": "value",
+                                            "spec": [
+                                                {
+                                                    "name": "key",
+                                                    "type": "text",
+                                                    "label": "Key",
+                                                    "required": true
+                                                },
+                                                {
+                                                    "name": "value",
+                                                    "type": "text",
+                                                    "label": "Value"
+                                                }
+                                            ],
+                                            "type": "collection",
+                                            "label": "Email header"
+                                        },
+                                        "type": "array",
+                                        "label": "Additional email headers"
+                                    },
+                                    {
+                                        "name": "content",
+                                        "type": "text",
+                                        "label": "Content"
+                                    }
+                                ]
+                            },
+                            "onerror": [
+                                {
+                                    "id": 16,
+                                    "module": "builtin:Ignore",
+                                    "version": 1,
+                                    "parameters": {},
+                                    "mapper": {},
+                                    "metadata": {
+                                        "designer": {
+                                            "x": 1500,
+                                            "y": 150
+                                        },
+                                        "restore": {}
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "flow": [
+                        {
+                            "id": 12,
+                            "module": "google-email:sendAnEmail",
+                            "version": 4,
+                            "parameters": {
+                                "__IMTCONN__": 11190815
+                            },
+                            "filter": {
+                                "name": "❓ Fallback – no valid budget",
+                                "conditions": []
+                            },
+                            "mapper": {
+                                "to": [
+                                    "{{1.email}}"
+                                ],
+                                "content": "<div style=\"font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#222;\">\r\n  <h2 style=\"color:#4a5568;\">Hi {{1.name}}, thanks for reaching out! 👋</h2>\r\n  <p>We've received your request at <strong>{{2.BUSINESS_NAME}}</strong>. A team member will be in touch within 24 hours to learn more about your project and budget.</p>\r\n  <p>Best regards,<br><strong>The {{2.BUSINESS_NAME}} Team</strong></p>\r\n</div>",
+                                "subject": "Thanks {{1.name}}, we received your request",
+                                "bodyType": "rawHtml"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 1200,
+                                    "y": 450,
+                                    "name": "❓ Unmatched – General Follow-up"
+                                },
+                                "setupValidation": {
+                                    "result": {
+                                        "valid": true,
+                                        "fields": []
+                                    },
+                                    "version": 1,
+                                    "configuration": "c19ff494471f9a6c"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "cc": {
+                                            "mode": "chose"
+                                        },
+                                        "to": {
+                                            "mode": "chose",
+                                            "items": [
+                                                null
+                                            ]
+                                        },
+                                        "bcc": {
+                                            "mode": "chose"
+                                        },
+                                        "from": {
+                                            "mode": "chose",
+                                            "label": "Empty"
+                                        },
+                                        "bodyType": {
+                                            "label": "Raw HTML"
+                                        },
+                                        "attachments": {
+                                            "mode": "chose"
+                                        },
+                                        "emailHeaders": {
+                                            "mode": "chose"
+                                        }
+                                    },
+                                    "parameters": {
+                                        "__IMTCONN__": {
+                                            "data": {
+                                                "scoped": "true",
+                                                "connection": "google-email"
+                                            },
+                                            "label": "Muhammad's Gmail connection (mohsinijaz1782005@gmail.com)"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "__IMTCONN__",
+                                        "type": "account:google-email",
+                                        "label": "Connection",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "to",
+                                        "spec": {
+                                            "name": "value",
+                                            "type": "email",
+                                            "label": "Recipient email address",
+                                            "required": true,
+                                            "validate": true
+                                        },
+                                        "type": "array",
+                                        "label": "To",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "subject",
+                                        "type": "text",
+                                        "label": "Subject"
+                                    },
+                                    {
+                                        "name": "bodyType",
+                                        "type": "select",
+                                        "label": "Body type",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                "rawHtml",
+                                                "collection"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "attachments",
+                                        "spec": {
+                                            "name": "value",
+                                            "spec": [
+                                                {
+                                                    "name": "filename",
+                                                    "type": "filename",
+                                                    "label": "File name",
+                                                    "required": true,
+                                                    "semantic": "file:name"
+                                                },
+                                                {
+                                                    "name": "data",
+                                                    "type": "buffer",
+                                                    "label": "Data",
+                                                    "required": true,
+                                                    "semantic": "file:data"
+                                                }
+                                            ],
+                                            "type": "collection",
+                                            "label": "Attachment"
+                                        },
+                                        "type": "array",
+                                        "label": "Attachments"
+                                    },
+                                    {
+                                        "name": "from",
+                                        "type": "select",
+                                        "label": "From"
+                                    },
+                                    {
+                                        "name": "cc",
+                                        "spec": {
+                                            "name": "value",
+                                            "type": "email",
+                                            "label": "Recipient email address"
+                                        },
+                                        "type": "array",
+                                        "label": "CC recipients"
+                                    },
+                                    {
+                                        "name": "bcc",
+                                        "spec": {
+                                            "name": "value",
+                                            "type": "email",
+                                            "label": "Recipient email address"
+                                        },
+                                        "type": "array",
+                                        "label": "BCC recipients"
+                                    },
+                                    {
+                                        "name": "emailHeaders",
+                                        "spec": {
+                                            "name": "value",
+                                            "spec": [
+                                                {
+                                                    "name": "key",
+                                                    "type": "text",
+                                                    "label": "Key",
+                                                    "required": true
+                                                },
+                                                {
+                                                    "name": "value",
+                                                    "type": "text",
+                                                    "label": "Value"
+                                                }
+                                            ],
+                                            "type": "collection",
+                                            "label": "Email header"
+                                        },
+                                        "type": "array",
+                                        "label": "Additional email headers"
+                                    },
+                                    {
+                                        "name": "content",
+                                        "type": "text",
+                                        "label": "Content"
+                                    }
+                                ]
+                            },
+                            "onerror": [
+                                {
+                                    "id": 17,
+                                    "module": "builtin:Ignore",
+                                    "version": 1,
+                                    "parameters": {},
+                                    "mapper": {},
+                                    "metadata": {
+                                        "designer": {
+                                            "x": 1500,
+                                            "y": 450
+                                        },
+                                        "restore": {}
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "metadata": {
+        "instant": true,
+        "version": 1,
+        "scenario": {
+            "roundtrips": 1,
+            "maxErrors": 3,
+            "autoCommit": true,
+            "autoCommitTriggerLast": true,
+            "sequential": false,
+            "slots": null,
+            "confidential": false,
+            "dataloss": false,
+            "dlq": false,
+            "freshVariables": false
+        },
+        "designer": {
+            "orphans": []
+        },
+        "zone": "eu1.make.com",
+        "notes": [
+            {
+                "moduleIds": [
+                    2
+                ],
+                "content": "<blockquote><em>Edit your business name, budget tiers (in USD) and booking link here. No other module needs editing.</em></blockquote>",
+                "isFilterNote": false,
+                "metadata": {
+                    "color": "#9138FE"
+                }
+            }
+        ]
+    }
+}
